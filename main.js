@@ -6,9 +6,11 @@ const SipSession = require('./SipSession')
 const getSipOptions = require('./getSipOptions')
 const { getOpenPorts, stunRequest } = require('./utils')
 
+const CAMERA_TO_STREAM = 'Backyard'
+
 stunRequest().then(async stun => {
   const [localRingAudioPort, localRingVideoPort] = await getOpenPorts(2, 10000)
-  const sipOptions = await getSipOptions('Backyard')
+  const sipOptions = await getSipOptions(CAMERA_TO_STREAM)
   const localRtpOptions = {
     address: stun.address,
     audio: {
