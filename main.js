@@ -50,6 +50,4 @@ stunRequest().then(async stun => {
   sipSession.ack()
 
   ringVideoSocket.send('\r\n', rtpOptions.video.port, rtpOptions.address)
-
-  await sipSession.startRtp()
 })
