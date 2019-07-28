@@ -2,14 +2,16 @@ const process = require('process')
 const { createSocket } = require('dgram')
 
 const H264Builder = require('./H264Builder')
-const SipSession = require('./SipSession')
 const getSipOptions = require('./getSipOptions')
 const { getOpenPorts, stunRequest } = require('./utils')
+
+const { SipSession } = require('ring-client-api')
 
 const CAMERA_TO_STREAM = 'Backyard'
 
 stunRequest().then(async stun => {
   const [localRingAudioPort, localRingVideoPort] = await getOpenPorts(2, 10000)
+
   const sipOptions = await getSipOptions(CAMERA_TO_STREAM)
   const localRtpOptions = {
     address: stun.address,
@@ -24,14 +26,8 @@ stunRequest().then(async stun => {
       srtpSalt: null
     }
   }
+
   const sipSession = new SipSession(sipOptions, localRtpOptions)
-
-  sipSession.on('end', () => {
-    console.log() // End up on a new line.
-    process.exit()
-  })
-
-  await sipSession.start()
 
   const ringVideoSocket = createSocket('udp4')
 
@@ -46,8 +42,7 @@ stunRequest().then(async stun => {
 
   ringVideoSocket.bind(localRingVideoPort)
 
-  const rtpOptions = await sipSession.invite()
-  sipSession.ack()
+  const rtpOptions = await sipSession.getRemoteRtpOptions()
 
   ringVideoSocket.send('\r\n', rtpOptions.video.port, rtpOptions.address)
 })
